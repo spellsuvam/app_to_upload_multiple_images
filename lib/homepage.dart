@@ -20,21 +20,39 @@ class _HomePageState extends State<HomePage> {
   void selectImagesfromGallery() async {
     final List<XFile>? selectedImages = await imagePicker.pickMultiImage();
     if (selectedImages!.isNotEmpty) {
-      imageFileList!.addAll(selectedImages);
+      setState(() {
+        imageFileList!.addAll(selectedImages);
+      });
     }
   }
 
-  void uploadImages()async {
+  void getImagesFromCamera() async {
+    final XFile? images =
+        await imagePicker.pickImage(source: ImageSource.camera);
+    if (images != null) {
+      setState(() {
+        imageFileList!.add(images);
+      });
+    }
+  }
+
+  void removeSelectedImage(XFile image) {
+    setState(() {
+      imageFileList!.remove(image);
+    });
+  }
+
+  void uploadImages() async {
     Dio dio = Dio(); // create a new instance
-    imageFileList = imageFileList!.toSet().toList();  // remove duplicates
-    final List<String> filePaths =
-        imageFileList!.map((XFile file) => file.path).toList(); // get file paths
-    for (XFile image in imageFileList!) { 
+    final List<String> filePaths = imageFileList!
+        .map((XFile file) => file.path)
+        .toList(); // get file paths
+    for (XFile image in imageFileList!) {
       print("Image Paths");
       print(image.path);
     }
-  FormData formData = FormData(); 
-    for (var file in filePaths) { 
+    FormData formData = FormData();
+    for (var file in filePaths) {
       formData.files.addAll([
         MapEntry("assignment", await MultipartFile.fromFile(file)),
       ]);
@@ -43,12 +61,6 @@ class _HomePageState extends State<HomePage> {
     print(formData.files.length);
   }
 
-  void getImagesFromCamera()async {
-    final XFile? images=await imagePicker.pickImage(source: ImageSource.camera);
-    if(images!=null){
-      imageFileList!.add(images);
-    }
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,47 +70,93 @@ class _HomePageState extends State<HomePage> {
         body: Center(
           child: Column(
             children: [
-              MaterialButton(
-                  color: Colors.blue,
-                  child: const Text("Pick Images from Gallery",
-                      style: TextStyle(
-                          color: Colors.white70, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    selectImagesfromGallery();
-                  }),
-              const SizedBox(
-                height: 20,
-              ),
-              MaterialButton(
-                  color: Colors.blue,
-                  child: const Text("Pick Images from Camera",
-                      style: TextStyle(
-                          color: Colors.white70, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    getImagesFromCamera();
-                  }),
+              Column(
+                children: [
+                  MaterialButton(
+                      color: Colors.blue,
+                      child: const Text("Pick Images from Gallery",
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        selectImagesfromGallery();
+                      }),
                   const SizedBox(
-                height: 20,
+                    height: 20,
+                  ),
+                  MaterialButton(
+                      color: Colors.blue,
+                      child: const Text("Pick Images from Camera",
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        getImagesFromCamera();
+                      }),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  MaterialButton(
+                      color: Colors.blue,
+                      child: const Text("Upload Images",
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        uploadImages();
+                      }),
+                ],
               ),
-              MaterialButton(
-                  color: Colors.blue,
-                  child: const Text("Upload Images",
-                      style: TextStyle(
-                          color: Colors.white70, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    uploadImages();
-                  }),
-
               Expanded(
                   child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: GridView.builder(
                     itemCount: imageFileList!.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3),
                     itemBuilder: (BuildContext context, int index) {
-                      return Image.file(File(imageFileList![index].path),
-                          fit: BoxFit.cover);
+                      return Stack(
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Image.file(File(imageFileList![index].path),
+                                fit: BoxFit.cover),
+                          ),
+                          Positioned(
+                            left: 5,
+                            top: 5,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 10),
+                                  )
+                                ],
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: IconButton(
+                                  iconSize: 24,
+                                  onPressed: () {
+                                    removeSelectedImage(imageFileList![index]);
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      );
                     }),
               ))
             ],
