@@ -1,12 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:camera_app/heallivedoctormodeltest/clinicdata.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -56,29 +57,31 @@ class _HomePageState extends State<HomePage> {
       formData.files.addAll([
         MapEntry("assignment", await MultipartFile.fromFile(file)),
       ]);
+      
     }
     print("total images:-");
     print(formData.files.length);
+    print(clinic1.toJson().toString());
+    // try {
+    //   var response = await dio.post("https://imgbb.com/json",
+    //       data: formData,
+    //       options: Options(headers: {
+    //         HttpHeaders.authorizationHeader:
+    //             "Bearer 30c0fb23154808f01e8340de829b3d61f3bae2d9",
+    //         HttpHeaders.contentTypeHeader: "multipart/form-data",
+    //         HttpHeaders.acceptHeader: "application/json",
+    //         HttpHeaders.cookieHeader:
+    //             "PHPSESSID=aqqqtltar5vmt3ps0pmcj7v8mu; ai_user=aZLyPvPh+FhpHsDy/a2Eba|2022-06-09T17:50:06.166Z; __gads=ID=44c16da80224aa28-22860a8cfed300cc:T=1654797002:RT=1654797002:S=ALNI_Mau_hTsfnifUoCrn5nKzZELnuVhDQ; __gpi=UID=00000680b827974e:T=1654797002:RT=1654797002:S=ALNI_MZda-euXPt98SqneX3G8GWELWOmYA"
+    //       }));
+    //   if (response.statusCode == 200) {
+    //     log(response.data.toString());
+    //     print("success");
+    //   }
+    // } on DioError catch (e) {
+    //   log(e.response!.data.toString());
 
-    try {
-  var response = await dio.post("https://imgbb.com/json",
-      data: formData,
-      options: Options(headers: {
-        HttpHeaders.authorizationHeader:
-            "Bearer 30c0fb23154808f01e8340de829b3d61f3bae2d9",
-        HttpHeaders.contentTypeHeader: "multipart/form-data",
-        HttpHeaders.acceptHeader: "application/json",
-        HttpHeaders.cookieHeader: "PHPSESSID=aqqqtltar5vmt3ps0pmcj7v8mu; ai_user=aZLyPvPh+FhpHsDy/a2Eba|2022-06-09T17:50:06.166Z; __gads=ID=44c16da80224aa28-22860a8cfed300cc:T=1654797002:RT=1654797002:S=ALNI_Mau_hTsfnifUoCrn5nKzZELnuVhDQ; __gpi=UID=00000680b827974e:T=1654797002:RT=1654797002:S=ALNI_MZda-euXPt98SqneX3G8GWELWOmYA"
-      }));
-  if (response.statusCode == 200) {
-    log(response.data.toString());
-    print("success");
-  }
-} on DioError catch (e) {
-  log(e.response!.data.toString());
-  
-    print("failure");
-}
+    //   print("failure");
+    // }
   }
 
   @override

@@ -1,6 +1,6 @@
+import 'package:camera_app/heallivedoctormodeltest/uitoaddclinic.dart';
+import 'package:camera_app/homepage.dart';
 import 'package:flutter/material.dart';
-
-import 'homepage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:  HomePage(),
+      home: const UIToAddClinic(),
     );
   }
 }
-
