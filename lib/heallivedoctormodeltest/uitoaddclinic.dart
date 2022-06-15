@@ -46,31 +46,42 @@ class _UIToAddClinicState extends State<UIToAddClinic> {
     return requestBody;
   }
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  void validateAndSubmit() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      log(getRequestBody(clinic1).toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Add clinic")),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ...clinic1.availableDays
-                .asMap()
-                .map((i, element) => MapEntry(
-                    i,
-                    WorkingDaysAndShiftWidget(
-                      day: element,
-                      index: i,
-                      onDelete: () {
-                        setState(() {
-                          clinic1.availableDays.removeAt(i);
-                        });
-                      },
-                    )))
-                .values
-                .toList(),
-            addWorkingDaysAndShiftsButton(),
-            saveButton(),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              ...clinic1.availableDays
+                  .asMap()
+                  .map((i, element) => MapEntry(
+                      i,
+                      WorkingDaysAndShiftWidget(
+                        day: element,
+                        index: i,
+                        onDelete: () {
+                          setState(() {
+                            clinic1.availableDays.removeAt(i);
+                          });
+                        },
+                      )))
+                  .values
+                  .toList(),
+              addWorkingDaysAndShiftsButton(),
+              saveButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -80,7 +91,7 @@ class _UIToAddClinicState extends State<UIToAddClinic> {
     return TextButton(
         onPressed: () {
           // log(clinic1.toJson().toString());
-          log(getRequestBody(clinic1).toString());
+          validateAndSubmit();
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,21 +99,32 @@ class _UIToAddClinicState extends State<UIToAddClinic> {
         ));
   }
 
-  TextButton addWorkingDaysAndShiftsButton() {
-    return TextButton(
-        onPressed: () {
-          setState(() {
-            clinic1.availableDays.add(AvailableDay(
-                workingDays: [],
-                availableTimeSlots: [TimeSlot(startTime: "", endTime: "")]));
-          });
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Add Working Days and Shift"),
-            const Icon(Icons.add)
-          ],
-        ));
+  InkWell addWorkingDaysAndShiftsButton() {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          clinic1.availableDays.add(AvailableDay(
+              workingDays: [],
+              availableTimeSlots: [TimeSlot(startTime: "", endTime: "")]));
+        });
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("Add Days and Shifts"),
+          const SizedBox(
+            width: 8,
+          ),
+          Container(
+            height: 30,
+            width: 30,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.withOpacity(0.5))),
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
   }
 }

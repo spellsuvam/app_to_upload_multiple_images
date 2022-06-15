@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:camera_app/heallivedoctormodeltest/availableday.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 import 'clinicdata.dart';
@@ -44,18 +47,32 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
     );
   }
 
-  TextButton addShiftButton() {
-    return TextButton(
-        onPressed: () {
-          setState(() {
-            clinic1.availableDays[widget.index].availableTimeSlots
-                .add(TimeSlot(startTime: "", endTime: ""));
-          });
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [Text("Add Shift"), Icon(Icons.add)],
-        ));
+  InkWell addShiftButton() {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          clinic1.availableDays[widget.index].availableTimeSlots
+              .add(TimeSlot(startTime: "", endTime: ""));
+        });
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("Add shift"),
+          const SizedBox(
+            width: 8,
+          ),
+          Container(
+            height: 30,
+            width: 30,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.withOpacity(0.5))),
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
   }
 
   Padding selectTimeSlots(TimeSlot timeSlot, int index) {
@@ -68,10 +85,37 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
+            child: TextFormField(
+              validator: ((value) {
+                if (value!.isEmpty) {
+                  return "Please enter start time";
+                }
+                return null;
+              }),
+              onTap: (() {
+                showTimePicker(context: context, initialTime: TimeOfDay.now())
+                    .then(
+                  (value) {
+                    if (value != null) {
+                      DateTime parsedTime = DateFormat.jm()
+                          .parse(value.format(context).toString());
+                      String formattedTime =
+                          DateFormat('HH:mm:ss').format(parsedTime);
+                      clinic1
+                          .availableDays[widget.index]
+                          .availableTimeSlots[index]
+                          .startTime = value.format(context);
+                      setState(() {
+                        startTime.text = value.format(context);
+                      });
+                    }
+                  },
+                );
+              }),
+              readOnly: true,
               controller: startTime,
-              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
+                isDense: true,
                 border: OutlineInputBorder(),
                 labelText: 'Start Time',
               ),
@@ -81,12 +125,39 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
             width: 10,
           ),
           Expanded(
-            child: TextField(
-              keyboardType: TextInputType.number,
+            child: TextFormField(
+              validator: ((value) {
+                if (value!.isEmpty) {
+                  return "Please enter end time";
+                }
+                return null;
+              }),
+              onTap: (() {
+                showTimePicker(context: context, initialTime: TimeOfDay.now())
+                    .then(
+                  (value) {
+                    if (value != null) {
+                      DateTime parsedTime = DateFormat.jm()
+                          .parse(value.format(context).toString());
+                      String formattedTime =
+                          DateFormat('HH:mm:ss').format(parsedTime);
+                      clinic1
+                          .availableDays[widget.index]
+                          .availableTimeSlots[index]
+                          .endTime = value.format(context);
+                      setState(() {
+                        endTime.text = value.format(context);
+                      });
+                    }
+                  },
+                );
+              }),
+              readOnly: true,
               controller: endTime,
               decoration: const InputDecoration(
+                isDense: true,
                 border: OutlineInputBorder(),
-                labelText: 'Start Time',
+                labelText: 'End Time',
               ),
             ),
           ),
@@ -108,17 +179,25 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
       children: [
         Expanded(
           child: MultiSelectDialogField(
-            buttonIcon: const Icon(Icons.add),
+            buttonIcon: const Icon(Icons.keyboard_arrow_down),
+            buttonText: const Text("Select Working Days"),
+            validator: ((value) {
+              if (value!.isEmpty) {
+                return "Please choose any day";
+              }
+              return null;
+            }),
+            separateSelectedItems: true,
+            initialValue: clinic1.availableDays[widget.index].workingDays,
             chipDisplay: MultiSelectChipDisplay<String>(
               icon: const Icon(Icons.cancel),
               onTap: (String value) {
-                setState(() {
-                  selectedWeekDays.remove(value);
-                });
+                clinic1.availableDays[widget.index].workingDays.remove(value);
+                setState(() {});
               },
-              items: [
-                ...selectedWeekDays.map((e) => MultiSelectItem(e, e)).toList(),
-              ],
+              items: clinic1.availableDays[widget.index].workingDays
+                  .map((e) => MultiSelectItem(e, e))
+                  .toList(),
             ),
             decoration: BoxDecoration(
                 border: Border.all(width: 1),
@@ -128,7 +207,8 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
             items: weekDays.map((e) => MultiSelectItem(e, e)).toList(),
             listType: MultiSelectListType.CHIP,
             onConfirm: (List<String> values) {
-              selectedWeekDays = values.map((String e) => e).toList();
+              clinic1.availableDays[widget.index].workingDays = values;
+              // selectedWeekDays = values.map((String e) => e).toList();
             },
           ),
         ),
@@ -138,53 +218,59 @@ class _WorkingDaysAndShiftWidgetState extends State<WorkingDaysAndShiftWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        horizontalDivider(),
-        Row(
-          children: [
-            const Expanded(
-              child: Center(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          horizontalDivider(),
+          Row(
+            children: [
+              const Expanded(
                 child: Text(
-                  "Working Days and Shifts. ",
+                  "Select Days and Shifts. ",
                   style: TextStyle(
                     fontSize: 14,
                   ),
                 ),
               ),
-            ),
-            Visibility(
-                visible: clinic1.availableDays.length > 1,
-                child: deleteButton(() {
-                  widget.onDelete();
-                }))
-          ],
-        ),
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                selectWorkingDays(),
-                const SizedBox(
-                  height: 10,
-                ),
-                ...widget.day.availableTimeSlots
-                    .asMap()
-                    .map((i, element) => MapEntry(
-                          i,
-                          selectTimeSlots(element, i),
-                        ))
-                    .values
-                    .toList(),
-                addShiftButton(),
-                horizontalDivider(),
-              ],
-            ),
+              Visibility(
+                  visible: clinic1.availableDays.length > 1,
+                  child: deleteButton(() {
+                    widget.onDelete();
+                  }))
+            ],
           ),
-        )
-      ],
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Days"),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  selectWorkingDays(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  ...widget.day.availableTimeSlots
+                      .asMap()
+                      .map((i, element) => MapEntry(
+                            i,
+                            selectTimeSlots(element, i),
+                          ))
+                      .values
+                      .toList(),
+                  addShiftButton(),
+                  // horizontalDivider(),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
