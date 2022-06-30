@@ -1,8 +1,4 @@
-import 'dart:collection';
-import 'dart:developer';
 import 'dart:io';
-
-import 'package:camera_app/heallivedoctormodeltest/clinicdata.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -61,7 +57,7 @@ class _HomePageState extends State<HomePage> {
     }
     print("total images:-");
     print(formData.files.length);
-    print(clinic1.toJson().toString());
+    // print(clinic1.toJson().toString());
     // try {
     //   var response = await dio.post("https://imgbb.com/json",
     //       data: formData,
